@@ -1,0 +1,26 @@
+#!/bin/sh -e
+
+case "$1" in
+    failed-upgrade|abort-install|abort-upgrade|disappear|upgrade)
+    ;;
+    remove)
+    ;;
+    purge)
+        rm -f /etc/cexporter/config.yml
+        rm -f /etc/cexporter/config.yml.default
+
+        rm -rf /var/log/cexporter.log
+    ;;
+
+    *)
+        echo "postrm called with unknown argument \`$1'" >&2
+        exit 1
+esac
+
+# In case this system is running systemd, we make systemd reload the unit files
+# to pick up changes.
+if [ -d /run/systemd/system ] ; then
+	systemctl --system daemon-reload >/dev/null || true
+fi
+
+exit 0

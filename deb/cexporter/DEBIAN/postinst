@@ -1,0 +1,37 @@
+#!/bin/sh -e
+
+if [ "$1" = "configure" ]; then
+    if ! getent group cexporter > /dev/null 2>&1 ; then
+        addgroup --system --quiet cexporter
+    fi
+
+    if ! getent passwd cexporter > /dev/null 2>&1 ; then
+        adduser --quiet \
+            --system --disabled-login \
+            --ingroup cexporter --no-create-home \
+            cexporter;
+
+        if getent group docker > /dev/null 2>&1 ; then
+            usermod -aG docker cexporter
+        fi
+    fi
+
+    if [ ! -f /etc/cexporter/config.yml ]; then
+        cp /etc/cexporter/config.yml.default /etc/cexporter/config.yml
+    fi
+
+    if [ ! -f /var/log/cexporter.log ]; then
+        touch /var/log/cexporter.log
+    fi
+
+    chown -R cexporter:cexporter /etc/cexporter
+    chown cexporter:cexporter /var/log/cexporter.log
+fi
+
+# In case this system is running systemd, we make systemd reload the unit files
+# to pick up changes.
+if [ -d /run/systemd/system ] ; then
+	systemctl --system daemon-reload >/dev/null || true
+fi
+
+exit 0

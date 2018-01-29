@@ -1,0 +1,60 @@
+sudo: required
+
+services:
+  - docker
+
+language: go
+go:
+  - 1.9
+
+addons:
+  apt:
+    packages:
+    - dpkg
+    - debconf
+    - debhelper
+    - lintian
+    - fakeroot
+
+before_install:
+  - go get github.com/mitchellh/gox
+install: true
+
+before_script:
+  - git config --local user.name "CheeressCloud"
+  - git config --local user.email "nnsceg@gmail.com"
+
+script:
+  - diff -u <(echo -n) <(gofmt -d `find . -type f -name '*.go' -not -path "./vendor/*"`)
+  - go vet $(go list ./... | grep -v /vendor/)
+  - CGO_ENABLED=0 gox -os="linux darwin" -arch="amd64" -output="{{.Dir}}_{{.OS}}_{{.Arch}}" -ldflags "-s -X main.Rev=`git rev-parse --short HEAD`" -verbose ./...
+  - cp ./cexporter_linux_amd64 ./deb/cexporter/usr/bin/cexporter
+  - rm ./deb/cexporter/usr/bin/.gitkeep
+  - cd deb
+  - fakeroot dpkg-deb --build cexporter
+  - lintian cexporter.deb || true
+  - mv cexporter.deb "cexporter-$TRAVIS_TAG.deb"
+  - cd ..
+
+after_success:
+  - if [ -n "$TRAVIS_TAG" ]; then
+      ls -lah cexporter_*;
+      docker login -u $DOCKER_USER -p $DOCKER_PASSWORD;
+      docker build --build-arg filename=cexporter_linux_amd64 --build-arg version=$TRAVIS_TAG -t cheerlesscloud/cexporter -t cheerlesscloud/cexporter:$TRAVIS_TAG .;
+      docker push cheerlesscloud/cexporter;
+      docker push cheerlesscloud/cexporter:$TRAVIS_TAG;
+    fi
+
+deploy:
+  provider: releases
+  skip_cleanup: true
+  api_key: "$GITHUB_AUTH_TOKEN"
+  file:
+    - cexporter_linux_amd64
+    - cexporter_darwin_amd64
+    - deb/cexporter-$TRAVIS_TAG.deb
+  draft: true
+  on:
+    repo: CheerlessCloud/cexporter
+    branch: master
+    tags: true

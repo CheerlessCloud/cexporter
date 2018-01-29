@@ -2,7 +2,8 @@
 logs
 *.log
 
-# Dependencies
-vendor
-
 **/.DS_Store
+.vscode
+.idea
+
+cexporter_*

@@ -1,0 +1,8 @@
+devenv: false
+loglevel: "info"
+logtofile: "cexporter.log"
+fetchinterval: 2000
+fetchtimeout: 10000
+enableselfmetrics: false
+containerlabelslist:
+  - "version"

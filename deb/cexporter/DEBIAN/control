@@ -1,0 +1,8 @@
+Package: cexporter
+Version: 1.0-1
+Section: misc
+Architecture: amd64
+Provides: cexporter
+Maintainer: CheerlessCloud <nnsceg@gmail.com>
+Description: Docker containers stats exporter for Prometheus.
+Origin: https://github.com/CheerlessCloud/cexporter
