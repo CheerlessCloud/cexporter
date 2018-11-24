@@ -5,7 +5,7 @@ services:
 
 language: go
 go:
-  - 1.9
+  - 1.11
 
 addons:
   apt:
