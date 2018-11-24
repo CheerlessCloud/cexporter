@@ -5,16 +5,16 @@ services:
 
 language: go
 go:
-  - 1.9
+  - 1.11
 
 addons:
   apt:
     packages:
-    - dpkg
-    - debconf
-    - debhelper
-    - lintian
-    - fakeroot
+      - dpkg
+      - debconf
+      - debhelper
+      - lintian
+      - fakeroot
 
 before_install:
   - go get github.com/mitchellh/gox
@@ -38,11 +38,11 @@ script:
 
 after_success:
   - if [ -n "$TRAVIS_TAG" ]; then
-      ls -lah cexporter_*;
-      docker login -u $DOCKER_USER -p $DOCKER_PASSWORD;
-      docker build --build-arg filename=cexporter_linux_amd64 --build-arg version=$TRAVIS_TAG -t cheerlesscloud/cexporter -t cheerlesscloud/cexporter:$TRAVIS_TAG .;
-      docker push cheerlesscloud/cexporter;
-      docker push cheerlesscloud/cexporter:$TRAVIS_TAG;
+    ls -lah cexporter_*;
+    docker login -u $DOCKER_USER -p $DOCKER_PASSWORD;
+    docker build --build-arg filename=cexporter_linux_amd64 --build-arg version=$TRAVIS_TAG -t cheerlesscloud/cexporter -t cheerlesscloud/cexporter:$TRAVIS_TAG .;
+    docker push cheerlesscloud/cexporter;
+    docker push cheerlesscloud/cexporter:$TRAVIS_TAG;
     fi
 
 deploy:
