@@ -16,7 +16,7 @@ docker run \
   --log-opt max-size=10m \
   --name cexporter \
   -p 9167:9167 \
-  cheerlesscloud/cexporter:1.0
+  cheerlesscloud/cexporter:1.0.1
 ```
 
 ### Grafana dashboard
