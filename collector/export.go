@@ -138,13 +138,13 @@ func flushAllMetrics() {
 	var savedRememberedMetricLabels = rememberedMetricLabels
 	rememberedMetricLabels = []prometheus.Labels{}
 	for _, labels := range savedRememberedMetricLabels {
-		var deleted = cpuUsageRatio.Delete(labels)
-		deleted = deleted && memoryUsageRatio.Delete(labels)
-		deleted = deleted && memoryUsageBytes.Delete(labels)
-		deleted = deleted && memoryLimitBytes.Delete(labels)
-		deleted = deleted && cpuThrottledTime.Delete(labels)
-		deleted = deleted && restartsCount.Delete(labels)
-		deleted = deleted && containerState.Delete(labels)
+		cpuUsageRatio.Delete(labels)
+		memoryUsageRatio.Delete(labels)
+		memoryUsageBytes.Delete(labels)
+		memoryLimitBytes.Delete(labels)
+		cpuThrottledTime.Delete(labels)
+		restartsCount.Delete(labels)
+		containerState.Delete(labels)
 	}
 }
 
