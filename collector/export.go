@@ -86,9 +86,6 @@ var (
 	}, []string{})
 )
 
-var rememberedMetricLabels = make(map[string]prometheus.Labels)
-var labelsToDelete = make(map[string]prometheus.Labels)
-
 func init() {
 	Registry.Register(fetchMetricsTime)
 	if config.EnableSelfMetrics {
@@ -110,27 +107,6 @@ func round(x float64, prec int) float64 {
 	return rounder / pow
 }
 
-func initLabelsToDelete() {
-	labelsToDelete = make(map[string]prometheus.Labels)
-	for key, value := range rememberedMetricLabels {
-		labelsToDelete[key] = value
-	}
-}
-
-func flushAllMetrics() {
-	for key, labels := range labelsToDelete {
-		cpuUsageRatio.Delete(labels)
-		memoryUsageRatio.Delete(labels)
-		memoryUsageBytes.Delete(labels)
-		memoryLimitBytes.Delete(labels)
-		cpuThrottledTime.Delete(labels)
-		restartsCount.Delete(labels)
-		containerState.Delete(labels)
-		delete(labelsToDelete, key)
-		delete(rememberedMetricLabels, key)
-	}
-}
-
 func exportToRegistry(metrics *ContainerMetrics) {
 	log.WithFields(log.Fields{"metric": metrics}).Debug("metric for container " + metrics.Name)
 
@@ -144,8 +120,8 @@ func exportToRegistry(metrics *ContainerMetrics) {
 		labels["label_"+label] = metrics.Labels[label] // labels of container will place as {...label_myLabel-foo="bar"}
 	}
 
-	delete(labelsToDelete, metrics.ID)
-	rememberedMetricLabels[metrics.ID] = labels
+	markMetricAsActualInCollectItration(metrics.ID)
+	rememberMetricLabels(metrics.ID, labels)
 
 	cpuUsageRatio.With(labels).Set(round(metrics.CPUUsage, 3))
 	memoryUsageRatio.With(labels).Set(round(float64(metrics.MemoryUsagePercent), 3))
