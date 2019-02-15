@@ -120,6 +120,9 @@ func exportToRegistry(metrics *ContainerMetrics) {
 		labels["label_"+label] = metrics.Labels[label] // labels of container will place as {...label_myLabel-foo="bar"}
 	}
 
+	markMetricAsActualInCollectItration(metrics.ID)
+	rememberMetricLabels(metrics.ID, labels)
+
 	cpuUsageRatio.With(labels).Set(round(metrics.CPUUsage, 3))
 	memoryUsageRatio.With(labels).Set(round(float64(metrics.MemoryUsagePercent), 3))
 
@@ -139,7 +142,13 @@ func StartCollectingMetrics(fetchInterval int64, fetchTimeout int64) {
 		defer ctxCancel()
 
 		startTime := time.Now()
+
+		refreshUnactualMetricsList()
+
 		FetchMetrics(ctx)
+
+		flushUnactualMetrics()
+
 		timeout := math.Floor(float64(time.Now().Sub(startTime).Nanoseconds() / 1000 / 1000))
 
 		log.WithField("time", timeout).Debug("Time to fetch metrics")
