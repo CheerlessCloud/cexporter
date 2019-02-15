@@ -107,6 +107,8 @@ func round(x float64, prec int) float64 {
 	return rounder / pow
 }
 
+var rememberedMetricLabels = []prometheus.Labels{}
+
 func exportToRegistry(metrics *ContainerMetrics) {
 	log.WithFields(log.Fields{"metric": metrics}).Debug("metric for container " + metrics.Name)
 
@@ -120,6 +122,8 @@ func exportToRegistry(metrics *ContainerMetrics) {
 		labels["label_"+label] = metrics.Labels[label] // labels of container will place as {...label_myLabel-foo="bar"}
 	}
 
+	rememberedMetricLabels = append(rememberedMetricLabels, labels)
+
 	cpuUsageRatio.With(labels).Set(round(metrics.CPUUsage, 3))
 	memoryUsageRatio.With(labels).Set(round(float64(metrics.MemoryUsagePercent), 3))
 
@@ -128,6 +132,20 @@ func exportToRegistry(metrics *ContainerMetrics) {
 	cpuThrottledTime.With(labels).Set(float64(metrics.CPUThrottledTime))
 	restartsCount.With(labels).Set(float64(metrics.RestartCount))
 	containerState.With(labels).Set(float64(metrics.State))
+}
+
+func flushAllMetrics() {
+	var savedRememberedMetricLabels = rememberedMetricLabels
+	rememberedMetricLabels = []prometheus.Labels{}
+	for _, labels := range savedRememberedMetricLabels {
+		var deleted = cpuUsageRatio.Delete(labels)
+		deleted = deleted && memoryUsageRatio.Delete(labels)
+		deleted = deleted && memoryUsageBytes.Delete(labels)
+		deleted = deleted && memoryLimitBytes.Delete(labels)
+		deleted = deleted && cpuThrottledTime.Delete(labels)
+		deleted = deleted && restartsCount.Delete(labels)
+		deleted = deleted && containerState.Delete(labels)
+	}
 }
 
 // StartCollectingMetrics - start exporting metrics to prometheus registry.
@@ -139,6 +157,7 @@ func StartCollectingMetrics(fetchInterval int64, fetchTimeout int64) {
 		defer ctxCancel()
 
 		startTime := time.Now()
+		flushAllMetrics()
 		FetchMetrics(ctx)
 		timeout := math.Floor(float64(time.Now().Sub(startTime).Nanoseconds() / 1000 / 1000))
 
