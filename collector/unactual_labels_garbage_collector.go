@@ -7,14 +7,14 @@ var (
 	labelsToDelete         = make(map[string]prometheus.Labels)
 )
 
-func initLabelsToDelete() {
+func refreshUnactualMetricsList() {
 	labelsToDelete = make(map[string]prometheus.Labels)
 	for key, value := range rememberedMetricLabels {
 		labelsToDelete[key] = value
 	}
 }
 
-func flushAllMetrics() {
+func flushUnactualMetrics() {
 	for key, labels := range labelsToDelete {
 		cpuUsageRatio.Delete(labels)
 		memoryUsageRatio.Delete(labels)

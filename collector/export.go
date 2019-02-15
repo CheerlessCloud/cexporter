@@ -143,9 +143,11 @@ func StartCollectingMetrics(fetchInterval int64, fetchTimeout int64) {
 
 		startTime := time.Now()
 
-		initLabelsToDelete()
+		refreshUnactualMetricsList()
+
 		FetchMetrics(ctx)
-		flushAllMetrics()
+
+		flushUnactualMetrics()
 
 		timeout := math.Floor(float64(time.Now().Sub(startTime).Nanoseconds() / 1000 / 1000))
 
