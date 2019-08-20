@@ -1,15 +1,15 @@
 package collector
 
 import (
-    "github.com/prometheus/client_golang/prometheus"
-    "sync"
-    )
+	"github.com/prometheus/client_golang/prometheus"
+	"sync"
+)
 
 var (
 	rememberedMetricLabels      = make(map[string]prometheus.Labels)
 	rememberedMetricLabelsMutex = sync.RWMutex{}
-    labelsToDelete              = make(map[string]prometheus.Labels)
-    labelsToDeleteMutex         = sync.RWMutex{}
+	labelsToDelete              = make(map[string]prometheus.Labels)
+	labelsToDeleteMutex         = sync.RWMutex{}
 )
 
 func refreshUnactualMetricsList() {
@@ -34,13 +34,13 @@ func flushUnactualMetrics() {
 }
 
 func rememberMetricLabels(containerID string, labels prometheus.Labels) {
-    rememberedMetricLabelsMutex.Lock()
+	rememberedMetricLabelsMutex.Lock()
 	rememberedMetricLabels[containerID] = labels
-    rememberedMetricLabelsMutex.Unlock()
+	rememberedMetricLabelsMutex.Unlock()
 }
 
 func markMetricAsActualInCollectItration(containerID string) {
-    labelsToDeleteMutex.Lock()
+	labelsToDeleteMutex.Lock()
 	delete(labelsToDelete, containerID)
-    labelsToDeleteMutex.Unlock()
+	labelsToDeleteMutex.Unlock()
 }
