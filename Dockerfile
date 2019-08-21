@@ -12,7 +12,6 @@ FROM alpine:3.7
 
 RUN apk add curl
 
-ARG filename='cexporter'
 ARG version
 
 LABEL maintainer="CheeressCloud <nnsceg@gmail.com>"

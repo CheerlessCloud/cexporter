@@ -40,7 +40,7 @@ after_success:
   - if [ -n "$TRAVIS_TAG" ]; then
       ls -lah cexporter_*;
       docker login -u $DOCKER_USER -p $DOCKER_PASSWORD;
-      docker build --build-arg filename=cexporter_linux_amd64 --build-arg version=$TRAVIS_TAG -t cheerlesscloud/cexporter -t cheerlesscloud/cexporter:$TRAVIS_TAG .;
+      docker build --build-arg version=$TRAVIS_TAG -t cheerlesscloud/cexporter -t cheerlesscloud/cexporter:$TRAVIS_TAG .;
       docker push cheerlesscloud/cexporter;
       docker push cheerlesscloud/cexporter:$TRAVIS_TAG;
     fi
